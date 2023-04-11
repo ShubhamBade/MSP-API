@@ -36,7 +36,7 @@ app.get('/users', async (req, res) => {
 
     const data=  await User.find();
     console.log("data : "+data.length);
-    if (data==0) {
+    if (data==0) {  
       // Add some sample data to the database
       const sampleData = [
         { name: 'John Doe', location: 'New York', verified: true },
@@ -58,7 +58,7 @@ app.get('/users', async (req, res) => {
     const users = await User.find({
       $and: [
         { $text: { $search: searchString } },
-        { location: { $in: locations } },
+        { location: { $all: locations } },
         { verified: verified },
       ],
     })
@@ -74,7 +74,6 @@ app.get('/users', async (req, res) => {
   }
 });
 
-
 // Start the server
 app.listen(3000, () => {
   console.log('Server started on port 3000');
@@ -86,4 +85,8 @@ Testing api
 http://localhost:3000/users?search=John&location=New%20York&verified=true
 http://localhost:3000/users?search=Jane%20Smith&location=Los%20Angeles&verified=false
 http://localhost:3000/users?search=David&location=Houston&verified=true
+
+http://localhost:3000/users?search=David&location=India&verified=true
+http://localhost:3000/users?search=John&location=China&verified=false
+
 */
