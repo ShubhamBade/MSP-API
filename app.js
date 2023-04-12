@@ -34,9 +34,9 @@ const User = mongoose.model('User', userSchema);
 app.get('/users', async (req, res) => {
   try {
 
-    const data=  await User.find();
-    console.log("data : "+data.length);
-    if (data==0) {  
+    const data = await User.find();
+    console.log("Number Of Documents : " + data.length);
+    if (data == 0) {
       // Add some sample data to the database
       const sampleData = [
         { name: 'John Doe', location: 'New York', verified: true },
@@ -65,8 +65,40 @@ app.get('/users', async (req, res) => {
       .sort({ name: 1 })
       .exec();
 
-    const count=users.length;
-    console.log(count)
+    const count = users.length;
+    console.log("Query Result Doucmnent Count : "+count)
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+app.get('/updated', async (req, res) => {
+  try {
+    // Check if query parameters are present and set default values if not
+    const searchString = req.query.search || '';
+    const locations = req.query.location ? req.query.location.split(',') : [];
+    const verified = req.query.verified === 'true';
+
+    // Build the search query object
+    const query = {};
+    if (searchString) {
+      query.$text = { $search: searchString };
+    }
+    if (locations.length > 0) {
+      query.location = { $all: locations };
+    }
+    if (typeof verified === 'boolean') {
+      query.verified = verified;
+    }
+
+    console.log(query);
+    // Find the matching users and send the response
+    const users = await User.find(query).sort({ name: 1 }).exec();
+    const count = users.length;
+    console.log("Query Result Doucmnent Count : "+count)
     res.json(users);
   } catch (err) {
     console.error(err);
@@ -81,12 +113,17 @@ app.listen(3000, () => {
 
 
 /*
-Testing api
+Testing api- 3 parameter are required for this api
 http://localhost:3000/users?search=John&location=New%20York&verified=true
 http://localhost:3000/users?search=Jane%20Smith&location=Los%20Angeles&verified=false
 http://localhost:3000/users?search=David&location=Houston&verified=true
 
 http://localhost:3000/users?search=David&location=India&verified=true
-http://localhost:3000/users?search=John&location=China&verified=false
+http://localhost:3000/users?search=John&location=UK&verified=false
+
+upadted query: any number of parameter <=3
+http://localhost:3000/updated?search=&verified=true
+http://localhost:3000/updated
+http://localhost:3000/updated?location=India&verified=true
 
 */
